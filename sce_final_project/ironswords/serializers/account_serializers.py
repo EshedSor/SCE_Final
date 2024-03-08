@@ -18,6 +18,7 @@ class PhoneSerializer(serializers.Serializer):
             extra_keys = input_keys - known_keys
             raise serializers.ValidationError(f"Unexpected fields: {', '.join(extra_keys)}")
         return super().to_internal_value(data)
+    
 class OTPSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=10)
     otp = serializers.CharField(max_length = 6)
