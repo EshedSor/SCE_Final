@@ -5,12 +5,13 @@ from django.utils import timezone
 from datetime import datetime,timedelta
 import random
 from ironswords.helpers.sms_api import send_sms
-
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password
 #----------------------------------------#
 
 def generate_otp(user):
     otp = random.randint(100000, 999999)
-    user.otp = str(otp)
+    user.otp = make_password(str(otp))
     user.otp_created_at = timezone.now()
     user.save()
     return otp
@@ -20,14 +21,14 @@ def generate_otp(user):
 def send_otp(phone):
     user = User.objects.get(phone=phone)
     otp = generate_otp(user)
-    res = send_sms(user.phone,user.otp)
+    res = send_sms(user.phone,otp)
     return res
 #----------------------------------------#
 
 def verify_otp(phone, otp):
     try:
         user = User.objects.get(phone=phone)
-        if user.otp == otp:
+        if check_password(otp,user.otp):
             # Check if OTP is within validity period (e.g., 5 minutes)
             if user.otp_created_at > timezone.now() - timedelta(minutes=5):
                 # OTP is valid, proceed with login or other action

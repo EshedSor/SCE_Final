@@ -25,7 +25,9 @@ SMS_SOURCE_NUMBER = "0525698452"
 print("SMS API Endpoint:", SMS_API_TOKEN_EXPIRATIOM)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
+# Set session to expire in 3 months
+SESSION_COOKIE_AGE = 90 * 24 * 60 * 60  # 90 days, in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-(k_8h-sif!m$gy4-76))$ru5c@xej8*bu#y4omqu)8mw6-7p2h'
 
