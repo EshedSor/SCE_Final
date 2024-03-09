@@ -1,10 +1,6 @@
-from ironswords.models import User
 from ironswords.models.user_model import verify_otp
-import io
-from rest_framework.parsers import JSONParser
 from rest_framework import serializers
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.permissions import IsAuthenticated
+from ironswords.models.user_model import User
 class PhoneSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=10)
     def validate_phone(self,value):
@@ -37,3 +33,8 @@ class OTPSerializer(serializers.Serializer):
             return value
         else:
             raise serializers.ValidationError("OTP incorrect or timed out")
+        
+class PrefrencesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['first_name','last_name','email','gender','birth_day','city','volunteer_frequency','volunteer_categories','most_important','allow_notifications','finished_onboarding']
