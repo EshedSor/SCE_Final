@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 import os
 from ironswords.helpers.sms_api import refresh_token
+from ironswords.helpers.cities_api import refresh_cities
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'))
@@ -22,7 +23,8 @@ SMS_API_USERNAME = "Esheds"
 SMS_API_PASSWORD = "3-JpeHCy36"
 SMS_SOURCE_NUMBER = "0525698452"
 (SMS_API_TOKEN,SMS_API_TOKEN_EXPIRATIOM) = refresh_token()
-print("SMS API Endpoint:", SMS_API_TOKEN_EXPIRATIOM)
+CITIES_API_ENDPOINT = "https://data.gov.il/api/3/action/datastore_search?resource_id=5c78e9fa-c2e2-4771-93ff-7f400a12f7ba"
+CITY_LIST = refresh_cities()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 # Set session to expire in 3 months
@@ -34,7 +36,7 @@ SECRET_KEY = 'django-insecure-(k_8h-sif!m$gy4-76))$ru5c@xej8*bu#y4omqu)8mw6-7p2h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["10.0.2.2","*"]
 
 
 # Application definition
@@ -48,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'ironswords',
     'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -58,8 +61,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
-
+CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = 'sce_final_project.urls'
 
 TEMPLATES = [

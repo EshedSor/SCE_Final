@@ -7,10 +7,15 @@ import random
 from ironswords.helpers.sms_api import send_sms
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
+from django.conf import settings
+from enum import IntEnum
+from django.core.exceptions import ValidationError
+
 #----------------------------------------#
 
 def generate_otp(user):
     otp = random.randint(100000, 999999)
+    print("OTP : {0} !!!REMOVE AFTER TESTING".format(otp))
     user.otp = make_password(str(otp))
     user.otp_created_at = timezone.now()
     user.save()
@@ -60,13 +65,46 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(phone, password, **extra_fields)
     
 #----------------------------------------#
-    
+GENDERS = {
+     ('M',"Male"),
+     ('F',"Female"),
+ }
+class VolunteerFrequency(IntEnum):
+    LESS_THAN_ONCE = 1
+    ONCE_A_WEEK = 2
+    MORE_THAN_ONCE = 3
+    WHENEVER = 4
+VOLUNTEER_CATEGORIES = [
+    "Handiwork",
+    "Logistics",
+    "Tech",
+    "People",
+    "Sales",
+]
+MOST_IMPORTANT_PREFRENCE = {
+    ("Friends","להתנדב עם חברים"),
+    ("Distance","להתנדב קרוב לבית"),
+    ("Profession","לעסוק במקצוע ובכישורים שלי")
+}
+def validate_categories(value):
+    if not all(item in VOLUNTEER_CATEGORIES for item in value):
+        raise ValidationError(f"All categories must be one of {VOLUNTEER_CATEGORIES}.")
 class User(AbstractUser):
     username = None
     phone = models.CharField(max_length=10, unique=True)
     otp = models.CharField(max_length=6, blank=True, null=True)
     otp_created_at = models.DateTimeField(blank=True, null=True)
-
+    first_name = models.CharField(max_length=30,blank = True,null = True,default = None)
+    last_name = models.CharField(max_length=30,blank = True,null = True,default = None)
+    email = models.EmailField(max_length=254,blank = True,null = True,default = None)
+    gender = models.CharField(max_length = 6,blank = True,null = True,default = None,choices = GENDERS)
+    birth_day = models.DateField(auto_now=False, auto_now_add=False,blank = True,null = True, default = None)
+    city = models.CharField(max_length=254,blank = True,null = True,default = None,choices = settings.CITY_LIST)
+    volunteer_frequency = models.IntegerField(choices=[(tag, tag.value) for tag in VolunteerFrequency],blank = True,null = True,default = None)
+    volunteer_categories = models.JSONField(validators=[validate_categories],blank = True,null = True,default = None)
+    most_important = models.CharField(max_length=30,blank = True,null = True,default = None,choices = MOST_IMPORTANT_PREFRENCE)
+    allow_notifications = models.BooleanField(default = False)
+    finished_onboarding = models.BooleanField(default = False)
     USERNAME_FIELD = 'phone'
     REQUIRED_FIELDS = []
 
