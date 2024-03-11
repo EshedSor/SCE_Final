@@ -71,20 +71,22 @@ GENDERS = {
  }
 class VolunteerFrequency(IntEnum):
     LESS_THAN_ONCE = 1
-    ONCE_A_WEEK = 2
-    MORE_THAN_ONCE = 3
-    WHENEVER = 4
+    MORE_THAN_ONCE = 2
+    WHENEVER = 3
+    ONCE_A_WEEK = 0
 VOLUNTEER_CATEGORIES = [
-    "Handiwork",
-    "Logistics",
-    "Tech",
-    "People",
-    "Sales",
+    "Packaging", #לארוז חבילות
+    "Refurbishing", #לחדש בתים
+    "Driving",# להסיע או לשנע
+    "Handout",#לתרום ולמסור
+    "Recruit",#לגייס
+    "Advocacy",#כיכר החטופים
 ]
 MOST_IMPORTANT_PREFRENCE = {
     ("Friends","להתנדב עם חברים"),
-    ("Distance","להתנדב קרוב לבית"),
-    ("Profession","לעסוק במקצוע ובכישורים שלי")
+    ("Distance","קרוב לבית"),
+    ("Profession","לעסוק במקצוע ובכישורים שלי"),
+    ("Organization",'החמ"ל שלי')
 }
 def validate_categories(value):
     if not all(item in VOLUNTEER_CATEGORIES for item in value):
