@@ -12,6 +12,7 @@ from django.http import HttpResponse
 from django.contrib.auth import login
 
 class PhoneViewSet(viewsets.ViewSet):
+    authentication_classes = []
     def create(self,request, *args, **kwargs):
         serializer = PhoneSerializer(data = request.data)
         if serializer.is_valid():
