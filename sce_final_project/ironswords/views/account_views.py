@@ -10,6 +10,9 @@ from rest_framework.views import APIView
 from rest_framework.parsers import JSONParser
 from django.http import HttpResponse
 from django.contrib.auth import login
+from ironswords.helpers import cities_api #added for cities
+from django.conf import settings
+from rest_framework.authtoken.models import Token
 
 class PhoneViewSet(viewsets.ViewSet):
     authentication_classes = []
@@ -27,19 +30,20 @@ class PhoneViewSet(viewsets.ViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
         
 class OTPViewSet(viewsets.ViewSet):
-    authentication_classes = []
-    def create(self,request,*args, **kwargs):
-        serializer = OTPSerializer(data = request.data)
-        print(request.data)
+    authentication_classes = []  # No authentication required to access
+
+    def create(self, request, *args, **kwargs):
+        serializer = OTPSerializer(data=request.data)
         if serializer.is_valid():
-            user = User.objects.get(phone = serializer.validated_data['phone'])
-            login(request,user)
-            request.session.cycle_key()
-            session_key = request.session.session_key
-            request.session.set_expiry(90 * 24 * 60 * 60)  # 90 days, in seconds
-            return Response({"message":"Succesfully logged in","token":session_key},status=status.HTTP_200_OK)
+            # Assume the serializer provides a valid 'phone' field
+            try:
+                user = User.objects.get(phone = serializer.validated_data['phone'])
+                token, _ = Token.objects.get_or_create(user=user)
+                return Response({"message": "Successfully logged in", "token": token.key}, status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
         else:
-            return Response({"message":"wrong otp"},status = status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PrefrencesViewSet(viewsets.ModelViewSet):
     serializer_class = PrefrencesSerializer
@@ -48,4 +52,16 @@ class PrefrencesViewSet(viewsets.ModelViewSet):
     def get_object(self):
         return self.request.user
     http_method_names = ['patch']
+
+#added for cities
+class CityViewSet(viewsets.ViewSet): #viewset for handling city-related API request
+    def list(self, request): #handle Get request to retrieve the list of cities
+        cities = settings.CITY_LIST
+        cityList = []  
+        for i in cities: 
+            cityList.append(i[0])  
+        if cities is not None: #return the list of cities as a Json response
+            return Response(cityList)
+        else: #if cities data retrueval failed, return an error response
+            return Response({"message":"error retrieving cities data"}, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
     
