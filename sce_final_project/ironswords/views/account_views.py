@@ -3,7 +3,7 @@ from rest_framework import status
 from ironswords.models.user_model import *
 from django.shortcuts import get_object_or_404
 from ironswords.serializers.account_serializers import *
-from rest_framework import viewsets
+from rest_framework import viewsets,mixins
 from rest_framework.response import Response
 from rest_framework import authentication, permissions
 from rest_framework.views import APIView
@@ -39,19 +39,19 @@ class OTPViewSet(viewsets.ViewSet):
             try:
                 user = User.objects.get(phone = serializer.validated_data['phone'])
                 token, _ = Token.objects.get_or_create(user=user)
-                return Response({"message": "Successfully logged in", "token": token.key}, status=status.HTTP_200_OK)
+                return Response({"message": "Successfully logged in", "token": token.key,"user_id":"{0}".format(user.id)}, status=status.HTTP_200_OK)
             except User.DoesNotExist:
                 return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class PrefrencesViewSet(viewsets.ModelViewSet):
+class PrefrencesViewSet(mixins.UpdateModelMixin,viewsets.GenericViewSet):
     serializer_class = PrefrencesSerializer
     queryset = User.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     def get_object(self):
         return self.request.user
-    http_method_names = ['patch']
+    
 
 #added for cities
 class CityViewSet(viewsets.ViewSet): #viewset for handling city-related API request
