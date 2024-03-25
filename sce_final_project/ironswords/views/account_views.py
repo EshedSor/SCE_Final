@@ -51,6 +51,9 @@ class PrefrencesViewSet(mixins.UpdateModelMixin,viewsets.GenericViewSet):
     permission_classes = [permissions.IsAuthenticated]
     def get_object(self):
         return self.request.user
+    def update(self, request, *args, **kwargs):
+        print(request.data)
+        return super().update(request, *args, **kwargs)
     
 
 #added for cities
