@@ -89,8 +89,10 @@ MOST_IMPORTANT_PREFRENCE = {
     ("Organization",'החמ"ל שלי')
 }
 def validate_categories(value):
-    if not all(item in VOLUNTEER_CATEGORIES for item in value):
-        raise ValidationError(f"All categories must be one of {VOLUNTEER_CATEGORIES}.")
+    for i in value:
+        if i not in VOLUNTEER_CATEGORIES:
+            raise ValidationError(f"All categories must be one of {VOLUNTEER_CATEGORIES}.")
+    return True
 class User(AbstractUser):
     username = None
     phone = models.CharField(max_length=10, unique=True)
