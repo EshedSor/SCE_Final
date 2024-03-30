@@ -17,6 +17,7 @@ class Event(models.Model):
 application_status = (
 ('Pending','Pending'),
 ('Approved','Approved'),
+('Confirmed','Confirmed'),
 ('Declined','Declined'),
 ('Canceled','Canceled')
 )
@@ -24,3 +25,5 @@ class Application(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     event = models.ForeignKey(Event,on_delete=models.CASCADE)
     status = models.CharField(max_length = 10,blank = False,null = False, choices = application_status)
+    class Meta:
+        unique_together = (('user', 'event'),)

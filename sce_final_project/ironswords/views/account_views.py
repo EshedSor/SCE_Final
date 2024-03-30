@@ -39,7 +39,7 @@ class OTPViewSet(viewsets.ViewSet):
             try:
                 user = User.objects.get(phone = serializer.validated_data['phone'])
                 token, _ = Token.objects.get_or_create(user=user)
-                return Response({"message": "Successfully logged in", "token": token.key,"user_id":"{0}".format(user.id)}, status=status.HTTP_200_OK)
+                return Response({"message": "Successfully logged in", "token": token.key,"user_id":"{0}".format(user.id),"onboarding":"{0}".format(user.finished_onboarding)}, status=status.HTTP_200_OK)
             except User.DoesNotExist:
                 return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
         else:
