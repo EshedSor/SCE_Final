@@ -23,9 +23,13 @@ class EventViewset(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.Retrieve
         event = self.get_object()
         serializer = ApplicationSerializer(data = request.data)
         if serializer.is_valid():#need to make sure there is only one instance for each user and each event
-            application = Application(user = serializer.validated_data['user'],event = event,status = "Pending")
-            application.save()
-            return HttpResponse("Succesfully applied to event")
+            applications = Application.objects.filter(user = serializer.validated_data['user'],event = event)
+            if len(applications == 0):
+                application = Application(user = serializer.validated_data['user'],event = event,status = "Pending")
+                application.save()
+                return HttpResponse("Succesfully applied to event",status = status.HTTP_200_OK)
+            else:
+                return HttpResponse("Already applied to this event",status = status.HTTP_200_OK)
         else:
             return HttpResponse("failed to apply to event")
     @action(detail=True, methods=['post'])
