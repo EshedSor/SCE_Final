@@ -12,7 +12,7 @@ class Event(models.Model):
     start_date = models.DateTimeField(blank = False,null = False)
     duration = models.DurationField(blank = False,null = False,default = 2) #duration in hours
     organization = models.ForeignKey(Organization,on_delete=models.CASCADE) #Many to one relation - many events related to a single organization
-    volunteers = models.ManyToManyField(User)
+    volunteers = models.ManyToManyField(User,blank = True,null = True)
 
 application_status = (
 ('Pending','Pending'),

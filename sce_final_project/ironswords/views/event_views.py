@@ -21,17 +21,21 @@ class EventViewset(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.Retrieve
     @action(detail=True, methods=['post'])
     def apply(self, request, pk=None):
         event = self.get_object()
+        print(request.data)
         serializer = ApplicationSerializer(data = request.data)
         if serializer.is_valid():#need to make sure there is only one instance for each user and each event
             applications = Application.objects.filter(user = serializer.validated_data['user'],event = event)
-            if len(applications == 0):
+            print(applications)
+            if len(applications) == 0:
                 application = Application(user = serializer.validated_data['user'],event = event,status = "Pending")
                 application.save()
                 return HttpResponse("Succesfully applied to event",status = status.HTTP_200_OK)
             else:
-                return HttpResponse("Already applied to this event",status = status.HTTP_200_OK)
+                print("here")
+                return HttpResponse("Already applied to this event",status = status.HTTP_400_BAD_REQUEST)
         else:
-            return HttpResponse("failed to apply to event")
+            print("here 36")
+            return HttpResponse("failed to apply to event",status = status.HTTP_400_BAD_REQUEST)
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
         event = self.get_object()
