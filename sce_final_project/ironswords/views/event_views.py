@@ -4,14 +4,22 @@ from ironswords.models.user_model import *
 from django.shortcuts import get_object_or_404
 from ironswords.serializers.event_serializer import *
 from rest_framework import viewsets,mixins
-from rest_framework.response import Response
-from rest_framework import authentication, permissions
-from rest_framework.parsers import JSONParser
-from django.http import HttpResponse
-from rest_framework.authtoken.models import Token
+from django.http import HttpResponse 
 from ironswords.models.event_model import Event,Application
 from rest_framework.decorators import action
 from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet, DateFromToRangeFilter
+
+from rest_framework.filters import SearchFilter
+
+
+
+class EventFilter(FilterSet):
+    start_date = DateFromToRangeFilter()
+
+    class Meta:
+        model = Event
+        fields = ['recurring', 'organization', 'start_date']
 class EventViewset(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.RetrieveModelMixin,mixins.CreateModelMixin,mixins.UpdateModelMixin):
     queryset = Event.objects.all()
     def get_serializer_class(self):
@@ -60,3 +68,8 @@ class EventViewset(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.Retrieve
 class ShiftViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = ShiftEventSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['recurring', 'organization']
+    search_fields = ['name', 'description']
+    filterset_class = EventFilter
+

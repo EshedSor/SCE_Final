@@ -5,5 +5,4 @@ urlpatterns = [
     path('events/', include("ironswords.urls.event_urls")),
     path('organizations/',include("ironswords.urls.organization_urls")),
     path('shifts/', include("ironswords.urls.shift_urls")),
-
 ]
