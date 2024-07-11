@@ -56,3 +56,7 @@ class EventViewset(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.Retrieve
             return HttpResponse("Succesfully Canceled Application")
         else:
             return HttpResponse("failed to Cancel application 3")
+        
+class ShiftViewSet(viewsets.ModelViewSet):
+    queryset = Event.objects.all()
+    serializer_class = ShiftEventSerializer
