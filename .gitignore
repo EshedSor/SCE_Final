@@ -1,0 +1,23 @@
+# General Python ignores
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+db.sqlite3
+.DS_Store
+
+# Virtual environment
+venv/
+.venv/
+
+# PyCharm/IntelliJ specific ignores
+.idea/
+
+# VS Code specific ignores
+.vscode/
+
+#special files needing ignore
+.env
+client_secret.json
+GIT_TOKEN
