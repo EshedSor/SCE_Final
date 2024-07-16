@@ -21,3 +21,4 @@ venv/
 .env
 client_secret.json
 GIT_TOKEN
+sce_project_venv/
