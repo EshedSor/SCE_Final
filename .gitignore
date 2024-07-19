@@ -22,3 +22,4 @@ venv/
 client_secret.json
 GIT_TOKEN
 sce_project_venv/
+sce_final_project/db.sqlite3
