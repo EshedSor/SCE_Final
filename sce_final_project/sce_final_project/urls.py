@@ -24,5 +24,9 @@ def show_string(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('test/',show_string),
-    path('api/', include("ironswords.urls"))
+    path('api/', include("users.urls")),
+    path('api/', include("organizations.urls")),
+    path('api/', include("events.urls")),
+    #path('api/', include("communications.urls")),
+    #path('api/', include("notifications.urls")),
 ]
