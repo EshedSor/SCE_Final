@@ -24,3 +24,5 @@ GIT_TOKEN
 sce_project_venv/
 sce_final_project/db.sqlite3
 sce_proj_venv/*
+sce_final_project/sce_final_project/__pycache__/urls.cpython-312.pyc
+sce_final_project/db.sqlite3
