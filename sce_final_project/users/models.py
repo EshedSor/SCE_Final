@@ -100,7 +100,7 @@ class User(AbstractUser):
     otp_created_at = models.DateTimeField(blank=True, null=True)
     first_name = models.CharField(max_length=30,blank = True,null = True,default = None)
     last_name = models.CharField(max_length=30,blank = True,null = True,default = None)
-    email = models.EmailField(max_length=254,blank = True,null = True,default = None)
+    email = models.EmailField(max_length=254,blank = True,null = True,default = None,unique=True)
     gender = models.CharField(max_length = 6,blank = True,null = True,default = None,choices = GENDERS)
     birth_day = models.DateField(auto_now=False, auto_now_add=False,blank = True,null = True, default = None)
     city = models.CharField(max_length=254,blank = True,null = True,default = None,choices = settings.CITY_LIST)
