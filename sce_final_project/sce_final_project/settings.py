@@ -13,8 +13,8 @@ from dotenv import load_dotenv
 
 from pathlib import Path
 import os
-from ironswords.helpers.sms_api import refresh_token
-from ironswords.helpers.cities_api import refresh_cities
+from users.helpers.sms_api import refresh_token
+from users.helpers.cities_api import refresh_cities
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'))
@@ -48,11 +48,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'ironswords',
     'rest_framework',
     'corsheaders',
     'rest_framework.authtoken',
     'django_filters',
+    'organizations',
+    'events',
+    'communications',
+    'notifications',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -118,8 +122,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
+        'rest_framework.renderers.JSONRenderer',
+
     ],
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
@@ -160,4 +165,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
-AUTH_USER_MODEL = 'ironswords.User'
+AUTH_USER_MODEL = 'users.User'
