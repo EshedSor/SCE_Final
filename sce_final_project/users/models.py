@@ -109,6 +109,7 @@ class User(AbstractUser):
     most_important = models.CharField(max_length=30,blank = True,null = True,default = None,choices = MOST_IMPORTANT_PREFRENCE)
     allow_notifications = models.BooleanField(default = False)
     finished_onboarding = models.BooleanField(default = False)
+    friends = models.ManyToManyField("self", blank=True)
     USERNAME_FIELD = 'phone'
     REQUIRED_FIELDS = []
 
@@ -116,3 +117,5 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.phone
+    def name(self):
+        return "{0} {1}".format(self.first_name,self.last_name)

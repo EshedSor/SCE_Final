@@ -55,3 +55,7 @@ class PrefrencesSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['first_name','last_name','email','gender','birth_day','city','volunteer_frequency','volunteer_categories','most_important','allow_notifications','finished_onboarding']
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
