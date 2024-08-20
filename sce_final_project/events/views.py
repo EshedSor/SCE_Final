@@ -2,27 +2,34 @@ from django.shortcuts import render
 from rest_framework import status
 from users.models import *
 from django.shortcuts import get_object_or_404
-from .serializers import *
+from events.serializers import *
 from rest_framework import viewsets,mixins
 from django.http import HttpResponse 
-from .models import Event,Application
+from events.models import Event,Application
 from rest_framework.decorators import action
 from django.db.models import Q
-from django_filters.rest_framework import DjangoFilterBackend, FilterSet, DateFromToRangeFilter
+from django_filters.rest_framework import FilterSet, DateFromToRangeFilter,CharFilter,BaseInFilter,NumberFilter
+from rest_framework.filters import OrderingFilter
+from django_filters import rest_framework as filters
 
 from rest_framework.filters import SearchFilter
 
 
-
+class NumberInFilter(BaseInFilter, NumberFilter):
+    pass
 class EventFilter(FilterSet):
     start_date = DateFromToRangeFilter()
-
+    volunteers = NumberInFilter(field_name='volunteers', lookup_expr='in')
     class Meta:
         model = Event
-        fields = ['recurring', 'organization', 'start_date']
+        fields = ['recurring', 'organization', 'start_date','volunteers']
+    #def filter_volunteers(self, queryset, name, value):
+    #    volunteers = value.split(',')
+    #    return queryset.filter(volunteers__user_id=volunteers)
 class EventViewset(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.RetrieveModelMixin,mixins.CreateModelMixin,mixins.UpdateModelMixin):
+    filterset_class = EventFilter
+    filter_backends = [filters.DjangoFilterBackend,OrderingFilter]
     queryset = Event.objects.all()
-    
     def get_serializer_class(self):
         if self.action in ('apply','cancel') :
             return ApplicationSerializer
@@ -65,12 +72,10 @@ class EventViewset(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.Retrieve
             return HttpResponse("Succesfully Canceled Application")
         else:
             return HttpResponse("failed to Cancel application 3")
-        
+
 class ShiftViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = ShiftEventSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['recurring', 'organization']
     search_fields = ['name', 'description']
     filterset_class = EventFilter
-
