@@ -79,3 +79,4 @@ class ShiftViewSet(viewsets.ModelViewSet):
     filterset_fields = ['recurring', 'organization']
     search_fields = ['name', 'description']
     filterset_class = EventFilter
+
