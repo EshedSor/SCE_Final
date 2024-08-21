@@ -74,3 +74,15 @@ class ShiftViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description']
     filterset_class = EventFilter
 
+class OrgApplicationFilter(FilterSet):
+    class Meta:
+        model = Application
+        fields = ['id', 'user', 'event']
+class OrganizationApplicationViewSet(mixins.ListModelMixin,mixins.UpdateModelMixin,viewsets.GenericViewSet):
+    serializer_class = OrganizationApplicationSerializer
+    queryset = Application.objects.all()
+    filterset_class = OrgApplicationFilter
+    filter_backends = [filters.DjangoFilterBackend,OrderingFilter]
+    def get_queryset(self):
+        organization_id = self.request.user.organization
+        return Application.objects.filter(event__organization_id = organization_id)
