@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from .models import Event,Application
 from rest_framework.decorators import action
 from django.db.models import Q
-from django_filters.rest_framework import DjangoFilterBackend, FilterSet, DateFromToRangeFilter
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet, DateFromToRangeFilter,OrderingFilter
 
 from rest_framework.filters import SearchFilter
 
@@ -82,7 +82,7 @@ class OrganizationApplicationViewSet(mixins.ListModelMixin,mixins.UpdateModelMix
     serializer_class = OrganizationApplicationSerializer
     queryset = Application.objects.all()
     filterset_class = OrgApplicationFilter
-    filter_backends = [filters.DjangoFilterBackend,OrderingFilter]
+    filter_backends = [DjangoFilterBackend,OrderingFilter]
     def get_queryset(self):
         organization_id = self.request.user.organization
         return Application.objects.filter(event__organization_id = organization_id)
