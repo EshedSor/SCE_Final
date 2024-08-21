@@ -80,3 +80,19 @@ class ShiftViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description']
     filterset_class = EventFilter
 
+
+class OrgApplicationFilter(FilterSet):
+    status = CharFilter(field_name='status', lookup_expr='iexact')  # Case-insensitive filter
+    class Meta:
+        model = Application
+        fields = ['id', 'user', 'event',"status"]
+class OrganizationApplicationViewSet(mixins.ListModelMixin,mixins.UpdateModelMixin,viewsets.GenericViewSet):
+    serializer_class = OrganizationApplicationSerializer
+    filterset_class = OrgApplicationFilter
+    filter_backends = [filters.DjangoFilterBackend,OrderingFilter]
+    def get_queryset(self):
+        if(not self.request.user.is_anonymous):
+            organization_id = self.request.user.org
+            print(self.request.user.org)
+            return Application.objects.filter(event__organization_id = organization_id)
+        return Application.objects.filter(id = -1)

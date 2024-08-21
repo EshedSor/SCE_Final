@@ -10,7 +10,7 @@ from django.contrib.auth.hashers import check_password
 from django.conf import settings
 from enum import IntEnum
 from django.core.exceptions import ValidationError
-
+from organizations.models import Organization
 #----------------------------------------#
 
 def generate_otp(user):
@@ -107,6 +107,7 @@ class User(AbstractUser):
     volunteer_frequency = models.IntegerField(choices=[(tag, tag.value) for tag in VolunteerFrequency],blank = True,null = True,default = None)
     volunteer_categories = models.JSONField(validators=[validate_categories],blank = True,null = True,default = None)
     most_important = models.CharField(max_length=30,blank = True,null = True,default = None,choices = MOST_IMPORTANT_PREFRENCE)
+    org = models.ForeignKey(Organization,null = True,blank=True,on_delete=models.PROTECT)
     allow_notifications = models.BooleanField(default = False)
     finished_onboarding = models.BooleanField(default = False)
     friends = models.ManyToManyField("self", blank=True)
