@@ -13,6 +13,8 @@ from django.contrib.auth import login
 from .helpers import cities_api #added for cities
 from django.conf import settings
 from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.decorators import action
 
 class PhoneViewSet(viewsets.ViewSet):
     authentication_classes = []
@@ -38,8 +40,8 @@ class OTPViewSet(viewsets.ViewSet):
             # Assume the serializer provides a valid 'phone' field
             try:
                 user = User.objects.get(phone = serializer.validated_data['phone'])
-                token, _ = Token.objects.get_or_create(user=user)
-                return Response({"message": "Successfully logged in", "token": token.key,"user_id":"{0}".format(user.id),"onboarding":"{0}".format(user.finished_onboarding)}, status=status.HTTP_200_OK)
+                refresh = RefreshToken.for_user(user)
+                return Response({"message": "Successfully logged in" ,"refresh": str(refresh), "token": str(refresh.access_token),"user_id":"{0}".format(user.id),"onboarding":"{0}".format(user.finished_onboarding)}, status=status.HTTP_200_OK)
             except User.DoesNotExist:
                 return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
         else:
@@ -67,4 +69,27 @@ class CityViewSet(viewsets.ViewSet): #viewset for handling city-related API requ
             return Response(cityList)
         else: #if cities data retrueval failed, return an error response
             return Response({"message":"error retrieving cities data"}, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+class UsersViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    def update(self, request, *args, **kwargs):
+        print(request.headers)
+        return super().update(request, *args, **kwargs)
+    def get_permissions(self):
+        if self.action in []:
+            print('here')
+            permission_classes = [permissions.IsAuthenticated,]
+        else:
+            permission_classes =   [permissions.AllowAny,]
+        return [permission() for permission in permission_classes]
+
+    def retrieve(self, request, *args, **kwargs):
+        print(request.headers)
+        return super().retrieve(request, *args, **kwargs)
     
+    @action(detail=False, methods=['get'])
+    def friends(self,request):
+        friends = request.user.friends.all()
+        serializer = self.get_serializer(friends, many=True)
+        return Response(serializer.data)
+        

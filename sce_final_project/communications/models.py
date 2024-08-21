@@ -1,15 +1,19 @@
 from django.db import models
 from users.models import User
+
+class Chat(models.Model):
+    member_1 = models.ForeignKey(User,related_name='chats_as_member_1',on_delete=models.CASCADE)
+    member_2 = models.ForeignKey(User,related_name='chats_as_member_2',on_delete=models.CASCADE)
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['member_1', 'member_2'], name='unique_chat_members')
+        ]
 class Message(models.Model):
-    sender = models.ForeignKey(User, related_name='sent_messages', on_delete=models.CASCADE)
-    recipient = models.ForeignKey(User, related_name='received_messages', on_delete=models.CASCADE)
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f'Message from {self.sender} to {self.recipient} at {self.timestamp}'
-    
+    related_chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    sender = models.ForeignKey(User,on_delete=models.CASCADE)
 class Group(models.Model):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(User, related_name='communication_groups')
@@ -26,3 +30,4 @@ class GroupMessage(models.Model):
 
     def __str__(self):
         return f'Message from {self.sender} in {self.group} at {self.timestamp}'
+

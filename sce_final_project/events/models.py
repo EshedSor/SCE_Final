@@ -12,7 +12,7 @@ class Event(models.Model):
     start_date = models.DateTimeField(blank = False,null = False)
     duration = models.DurationField(blank = False,null = False,default = 2) #duration in hours
     organization = models.ForeignKey(Organization,on_delete=models.CASCADE) #Many to one relation - many events related to a single organization
-    volunteers = models.ManyToManyField(User,blank = True,null = True,related_name='volunteered_events')
+    volunteers = models.ManyToManyField(User,blank = True,related_name='volunteered_events')
     shift_manager = models.ForeignKey(User,blank = True,null = True,on_delete=models.PROTECT,related_name='shift_managed_events')
 application_status = (
 ('Pending','Pending'),
