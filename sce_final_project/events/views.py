@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import status
+from rest_framework import status,permissions
 from users.models import *
 from django.shortcuts import get_object_or_404
 from events.serializers import *
@@ -20,6 +20,7 @@ class NumberInFilter(BaseInFilter, NumberFilter):
 class EventFilter(FilterSet):
     start_date = DateFromToRangeFilter()
     volunteers = NumberInFilter(field_name='volunteers', lookup_expr='in')
+
     class Meta:
         model = Event
         fields = ['recurring', 'organization', 'start_date','volunteers']
@@ -27,6 +28,7 @@ class EventFilter(FilterSet):
     #    volunteers = value.split(',')
     #    return queryset.filter(volunteers__user_id=volunteers)
 class EventViewset(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.RetrieveModelMixin,mixins.CreateModelMixin,mixins.UpdateModelMixin):
+    permission_classes = [permissions.IsAuthenticated]
     filterset_class = EventFilter
     filter_backends = [filters.DjangoFilterBackend,OrderingFilter]
     queryset = Event.objects.all()
@@ -74,6 +76,7 @@ class EventViewset(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.Retrieve
             return HttpResponse("failed to Cancel application 3")
 
 class ShiftViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Event.objects.all()
     serializer_class = ShiftEventSerializer
     filterset_fields = ['recurring', 'organization']

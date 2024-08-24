@@ -31,6 +31,7 @@ class MessageSerializer(serializers.ModelSerializer):
         response = super().to_representation(instance)
         response['sender'] = ChatParticipantSerializer(instance.sender).data
         response['related_chat'] = ChatSerializer(instance.related_chat).data
+        print(response)
         return response
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
