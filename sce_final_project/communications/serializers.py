@@ -15,11 +15,7 @@ class ChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chat
         fields = ['member_1','member_2','id']
-    def to_representation(self, instance):
-        response = super().to_representation(instance)
-        response['member_1'] = ChatParticipantSerializer(instance.member_1).data
-        response['member_2'] = ChatParticipantSerializer(instance.member_2).data
-        return response
+
 class MessageSerializer(serializers.ModelSerializer):
     sender = ChatParticipantSerializer()
     related_chat = ChatSerializer()

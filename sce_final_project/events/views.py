@@ -19,11 +19,31 @@ class NumberInFilter(BaseInFilter, NumberFilter):
     pass
 class EventFilter(FilterSet):
     start_date = DateFromToRangeFilter()
-    volunteers = NumberInFilter(field_name='volunteers', lookup_expr='in')
+    volunteers = CharFilter(method='filter_by_volunteers_or_friends')
 
     class Meta:
         model = Event
         fields = ['recurring', 'organization', 'start_date','volunteers']
+
+    def filter_by_volunteers_or_friends(self, queryset, name, value):
+        if value == "friends":
+            # Assuming you have a way to get the current user and their friends
+            user = self.request.user
+            friends_ids = user.friends.values_list('id', flat=True)
+            
+            # Filter events by friends
+            return queryset.filter(volunteers__in=friends_ids)
+        if value == "self":
+            # Assuming you have a way to get the current user and their friends
+            user = self.request.user            
+            # Filter events by self
+            qs = queryset.filter(volunteers__in=[self.request.user.id])
+            print(self.request.user.id)
+            return qs
+        else:
+            # Default behavior for filtering by volunteers
+            volunteers_ids = value.split(',')
+            return queryset.filter(volunteers__in=volunteers_ids)
     #def filter_volunteers(self, queryset, name, value):
     #    volunteers = value.split(',')
     #    return queryset.filter(volunteers__user_id=volunteers)
@@ -40,41 +60,40 @@ class EventViewset(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.Retrieve
     def apply(self, request, pk=None):
         event = self.get_object()
         print(request.data)
-        serializer = ApplicationSerializer(data = request.data)
-        if serializer.is_valid():#need to make sure there is only one instance for each user and each event
-            applications = Application.objects.filter(user = serializer.validated_data['user'],event = event)
-            print(applications)
-            if len(applications) == 0:
-                application = Application(user = serializer.validated_data['user'],event = event,status = "Pending")
-                application.save()
-                return HttpResponse("Succesfully applied to event",status = status.HTTP_200_OK)
-            else:
-                print("here")
-                return HttpResponse("Already applied to this event",status = status.HTTP_400_BAD_REQUEST)
-        else:
-            print("here 36")
-            return HttpResponse("failed to apply to event",status = status.HTTP_400_BAD_REQUEST)
+        try:
+            applications = Application.objects.get(user = self.request.user,event = event)
+            return HttpResponse({"message":"failed to apply application Already applied"},status = status.HTTP_400_BAD_REQUEST)
+        except Application.DoesNotExist:
+            application = Application.objects.create(user = self.request.user,event = event,status = "pending")
+            return HttpResponse({"message":"Succesfully applied Application"},status = status.HTTP_200_OK)
+        except Application.MultipleObjectsReturned:
+                return HttpResponse({"message":"failed to apply application MultipleObjectsReturned"},status = status.HTTP_400_BAD_REQUEST)
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
         event = self.get_object()
-        serializer = ApplicationSerializer(data = request.data)
-        if serializer.is_valid():
-            try:
+        #serializer = ApplicationSerializer(data = request.data)
+        #if serializer.is_valid():
+        try:
                 application = Application.objects.get(
         (Q(status='Pending') | Q(status='Approved')),
-        user= serializer.validated_data['user'],
+        user= self.request.user,
         event=event
     )
                 application.status = "Canceled"
                 application.save()
-            except Application.DoesNotExist:
-                return HttpResponse("failed to Cancel application 1")
-            except Application.MultipleObjectsReturned:
-                return HttpResponse("failed to Cancel application 2")
-            return HttpResponse("Succesfully Canceled Application")
-        else:
-            return HttpResponse("failed to Cancel application 3")
-
+                event.volunteers.remove(self.request.user)
+                event.save() 
+                return HttpResponse("Succesfully Canceled Application",status = status.HTTP_200_OK)
+        except Application.DoesNotExist:
+                print(1)
+                return HttpResponse("failed to Cancel application DoesNotExist",status = status.HTTP_400_BAD_REQUEST)
+        except Application.MultipleObjectsReturned:
+                print(2)
+                return HttpResponse("failed to Cancel application MultipleObjectsReturned",status = status.HTTP_400_BAD_REQUEST)
+        #else:
+        #    print(3)
+        #    return HttpResponse("failed to Cancel application 3",status = status.HTTP_400_BAD_REQUEST)
+        
 class ShiftViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Event.objects.all()
