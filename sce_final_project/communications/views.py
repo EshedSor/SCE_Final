@@ -1,5 +1,5 @@
 # views.py
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions,status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import *
@@ -69,7 +69,24 @@ class MessageViewSet(viewsets.ModelViewSet):
 class ChatViewSet(viewsets.ModelViewSet):
     serializer_class = ChatSerializer
     queryset = Chat.objects.all()
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
+        # Custom logic before saving
+        mem1_id = request.data['member_1']['id']
+        mem2_id = request.data['member_2']['id']
+
+        # You can add logic here, e.g., prevent chats between the same members:
+        if Chat.objects.filter(member_1_id=mem1_id, member_2_id=mem2_id).exists() or Chat.objects.filter(member_1_id=mem2_id, member_2_id=mem1_id).exists():
+            qs = Chat.objects.filter(Q(member_1_id=mem1_id, member_2_id=mem2_id) | Q(member_1_id=mem2_id, member_2_id=mem1_id))
+            new_serializer = self.get_serializer(qs[0])
+            return Response(new_serializer.data, status=status.HTTP_200_OK)
+        mem2 = User.objects.get(id = mem2_id)
+        # Proceed with the default creation behavior
+        chat = Chat.objects.create(member_1 = request.user,member_2= mem2)
+        new_serializer = self.get_serializer(chat)
+        return Response(new_serializer.data, status=status.HTTP_201_CREATED)
 
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()

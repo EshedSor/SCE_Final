@@ -86,12 +86,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @sync_to_async
     def get_chat_history(self, chat_id):
         chat = Chat.objects.get(id=chat_id)
-        return list(Message.objects.filter(related_chat=chat).order_by('timestamp'))
+        history = list(Message.objects.filter(related_chat=chat).order_by('timestamp'))
+        for i in history:
+            print(i.sender_id)
+        return history
 
     @sync_to_async
     def get_user_info(self, message):
         # Helper method to retrieve sender information asynchronously
-        sender = message.related_chat.member_1 if message.related_chat.member_1 != self.user else message.related_chat.member_2
+        sender = message.sender
         return {
             'id': sender.id,
             'name': sender.name(),
