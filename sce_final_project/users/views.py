@@ -15,7 +15,7 @@ from django.conf import settings
 from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import action
-
+from django.db.models import Q
 class PhoneViewSet(viewsets.ViewSet):
     authentication_classes = []
     def create(self,request, *args, **kwargs):
@@ -82,14 +82,56 @@ class UsersViewSet(viewsets.ModelViewSet):
         else:
             permission_classes =   [permissions.AllowAny,]
         return [permission() for permission in permission_classes]
-
-    def retrieve(self, request, *args, **kwargs):
-        print(request.headers)
-        return super().retrieve(request, *args, **kwargs)
     
     @action(detail=False, methods=['get'])
     def friends(self,request):
         friends = request.user.friends.all()
         serializer = self.get_serializer(friends, many=True)
         return Response(serializer.data)
-        
+    
+    @action(detail=True, methods=['post'])
+    def friendrequest(self,request,pk=None):
+        friend = self.get_object()
+        pending_friend_request = FriendRequest.objects.filter(
+            Q(sender=request.user, receiver=friend) | Q(sender=friend, receiver=request.user),
+            status="pending"
+        )
+        # Check if they are already friends
+        if self.request.user != friend:
+            if not pending_friend_request.exists():
+                if (not friend.friends.filter(id=self.request.user.id).exists()) and (not self.request.user.friends.filter(id=friend.id).exists()):
+                    FriendRequest.objects.create(sender = request.user,receiver = friend)
+                    print("friend request sent succesfully")
+                    return HttpResponse({"message":"friend request sent succesfully"},status = status.HTTP_200_OK)
+                print("already friends")
+                return HttpResponse({"message":"already friends"},status = status.HTTP_400_BAD_REQUEST)
+            print("friend request already pending")
+            return HttpResponse({"message":"friend request already pending"},status = status.HTTP_400_BAD_REQUEST)
+        print("cant add self")
+        return HttpResponse({"message":"cant add self"},status = status.HTTP_400_BAD_REQUEST)
+class FriendRequestViewSet(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.RetrieveModelMixin):
+    queryset = FriendRequest.objects.all()
+    serializer_class = FriendRequestSerializer
+    permission_classes = permission_classes = [permissions.IsAuthenticated]
+    def list(self, request, *args, **kwargs):
+        qs = self.get_queryset().filter(status = "pending",receiver = request.user)
+        serializer = self.serializer_class(qs,many = True)
+        return HttpResponse(serializer.data,status = status.HTTP_200_OK)
+    @action(detail=True, methods=['post'])
+    def accept(self,request,pk = None):
+        fr = self.get_object()
+        if fr.receiver == request.user and fr.status == "pending":
+            fr.receiver.friends.add(fr.sender)
+            fr.sender.friends.add(fr.receiver)
+            fr.status = "accepted"
+            fr.save()
+            return HttpResponse({"message":"friend request accepted succesfully"},status = status.HTTP_200_OK)
+        return HttpResponse({"message":"invalid friend request"},status = status.HTTP_400_BAD_REQUEST)
+    @action(detail=True, methods=['post'])
+    def reject(self,request,pk = None):
+        fr = self.get_object()
+        if fr.receiver == request.user and fr.status == "pending":
+            fr.status = "rejected"
+            fr.save()
+            return HttpResponse({"message":"friend request rejected succesfully"},status = status.HTTP_200_OK)
+        return HttpResponse({"message":"invalid friend request"},status = status.HTTP_400_BAD_REQUEST)

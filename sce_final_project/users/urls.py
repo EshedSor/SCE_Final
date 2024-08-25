@@ -8,5 +8,6 @@ router.register(r"update",PrefrencesViewSet,basename = "update")
 #added for cities
 router.register(r"cities",CityViewSet, basename='city')
 router.register(r'users',UsersViewSet)
+router.register(r'friendrequests',FriendRequestViewSet)
 urlpatterns = [path('account/', include(router.urls)),
                ]
