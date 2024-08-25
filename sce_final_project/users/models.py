@@ -88,6 +88,7 @@ MOST_IMPORTANT_PREFRENCE = {
     ("Profession","לעסוק במקצוע ובכישורים שלי"),
     ("Organization",'החמ"ל שלי')
 }
+friend_request_choices = ["pending","accepted","canceled","rejected"]
 def validate_categories(value):
     for i in value:
         if i not in VOLUNTEER_CATEGORIES:
@@ -120,3 +121,8 @@ class User(AbstractUser):
         return self.phone
     def name(self):
         return "{0} {1}".format(self.first_name,self.last_name)
+    
+class FriendRequest(models.Model):
+    receiver = models.ForeignKey(User,on_delete=models.CASCADE,null=False,blank=False,related_name='friend_requests_received')
+    sender = models.ForeignKey(User,on_delete=models.CASCADE,null=False,blank=False,related_name='friend_requests_sent')
+    status = models.CharField(max_length=10,default = "pending",choices=[('pending', 'pending'), ('accepted', 'accepted'), ('rejected', 'rejected')])
