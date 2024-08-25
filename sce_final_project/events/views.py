@@ -108,7 +108,7 @@ class OrgApplicationFilter(FilterSet):
     class Meta:
         model = Application
         fields = ['id', 'user', 'event',"status"]
-class OrganizationApplicationViewSet(mixins.ListModelMixin,mixins.UpdateModelMixin,viewsets.GenericViewSet):
+class OrganizationApplicationViewSet(mixins.RetrieveModelMixin,mixins.ListModelMixin,mixins.UpdateModelMixin,viewsets.GenericViewSet):
     serializer_class = OrganizationApplicationSerializer
     filterset_class = OrgApplicationFilter
     filter_backends = [filters.DjangoFilterBackend,OrderingFilter]
@@ -118,3 +118,26 @@ class OrganizationApplicationViewSet(mixins.ListModelMixin,mixins.UpdateModelMix
             print(self.request.user.org)
             return Application.objects.filter(event__organization_id = organization_id)
         return Application.objects.filter(id = -1)
+    @action(detail=True, methods=['post'])
+    def decline(self, request, pk=None):
+        app = self.get_object()
+        print(app)
+        if app.status == "Pending":
+             app.status = "Declined"
+             app.save()
+             return HttpResponse({"message":"declined application succefully"},status = status.HTTP_200_OK)
+        return HttpResponse({"message":"application status isnt pending"},status=status.HTTP_400_BAD_REQUEST)
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        app = self.get_object()
+        if app.status.lower() == "pending":
+            if app.event.max_volunteers > (app.event.volunteers.count()):
+                app.status = "Approved"
+                app.event.volunteers.add(request.user)
+                app.save()
+                print(mixins.ListModelMixin)
+                return HttpResponse({"message":mixins.ListModelMixin},status = status.HTTP_200_OK)
+            print("already reached max capacity")
+            return HttpResponse({"message":"already reached max capacity"},status = status.HTTP_400_BAD_REQUEST)
+        print("application status isnt pending")
+        return HttpResponse({"message":"application status isnt pending"},status=status.HTTP_400_BAD_REQUEST)

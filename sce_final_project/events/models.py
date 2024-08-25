@@ -24,6 +24,6 @@ application_status = (
 class Application(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     event = models.ForeignKey(Event,on_delete=models.CASCADE)
-    status = models.CharField(max_length = 10,blank = False,null = False, choices = application_status)
+    status = models.CharField(max_length = 10,blank = False,null = False, choices = application_status,default="Pending")
     class Meta:
         unique_together = (('user', 'event'),)
