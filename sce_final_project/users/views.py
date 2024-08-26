@@ -16,6 +16,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import action
 from django.db.models import Q
+from rest_framework import filters
 class PhoneViewSet(viewsets.ViewSet):
     authentication_classes = []
     def create(self,request, *args, **kwargs):
@@ -72,6 +73,8 @@ class CityViewSet(viewsets.ViewSet): #viewset for handling city-related API requ
 class UsersViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['first_name', 'last_name']
     def update(self, request, *args, **kwargs):
         print(request.headers)
         return super().update(request, *args, **kwargs)

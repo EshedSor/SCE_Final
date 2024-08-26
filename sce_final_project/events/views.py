@@ -50,7 +50,8 @@ class EventFilter(FilterSet):
 class EventViewset(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.RetrieveModelMixin,mixins.CreateModelMixin,mixins.UpdateModelMixin):
     permission_classes = [permissions.IsAuthenticated]
     filterset_class = EventFilter
-    filter_backends = [filters.DjangoFilterBackend,OrderingFilter]
+    filter_backends = [filters.DjangoFilterBackend,OrderingFilter,SearchFilter]
+    search_fields = ['name', 'description','organization__name']
     queryset = Event.objects.all()
     def get_serializer_class(self):
         if self.action in ('apply','cancel') :
