@@ -11,7 +11,7 @@ def send_friend_request_notification(sender, receiver,frequest):
         'message': f"{sender.name()} sent you a friend request!",
         'request_id': frequest.id,
     }
-
+    print(notification_data)
     # Send notification to the receiver's WebSocket group via Redis
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
@@ -21,6 +21,7 @@ def send_friend_request_notification(sender, receiver,frequest):
             'notification': notification_data
         }
     )
+
 def send_message_notification(sender, receiver):
     notification_data = {
         'type': 'new_message',

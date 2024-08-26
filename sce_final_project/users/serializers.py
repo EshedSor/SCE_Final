@@ -28,13 +28,25 @@ class OTPSerializer(serializers.Serializer):
             raise serializers.ValidationError("Phone number must be 10 digits.")
         return value
     
-    def validate(self,value):
-        phone = value.get('phone')
-        otp = value.get('otp')
-        if verify_otp(phone,otp):
-            return value
-        else:
-            raise serializers.ValidationError("OTP incorrect or timed out")
+    def validate(self, data):
+        phone = data.get('phone')
+        otp = data.get('otp')
+
+        # Fetch the user and print their OTP for debugging
+        try:
+            user = User.objects.get(phone=phone)
+            print(f"User OTP: {user.otp}")  # Add this for debugging
+
+            if user.otp is None:
+                raise serializers.ValidationError("OTP has not been set for this user.")
+            
+            if verify_otp(phone, otp):
+                return data
+            else:
+                raise serializers.ValidationError("OTP incorrect or timed out.")
+        
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User with this phone does not exist.")
         
  #added for cities
 class CityField(serializers.CharField): 
@@ -61,7 +73,14 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
+class UserFriendRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id","first_name","last_name"]
+
 class FriendRequestSerializer(serializers.ModelSerializer):
+    receiver = UserFriendRequestSerializer()
+    sender = UserFriendRequestSerializer()
     class Meta:
         model = FriendRequest
-        fields = '__all__'
+        fields = ["id", "receiver", "sender", "status"]
