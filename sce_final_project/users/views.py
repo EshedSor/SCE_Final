@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from rest_framework import status
+
+from notifications.views import send_friend_request_notification
 from .models import *
 from django.shortcuts import get_object_or_404
 from .serializers import *
@@ -103,7 +105,8 @@ class UsersViewSet(viewsets.ModelViewSet):
         if self.request.user != friend:
             if not pending_friend_request.exists():
                 if (not friend.friends.filter(id=self.request.user.id).exists()) and (not self.request.user.friends.filter(id=friend.id).exists()):
-                    FriendRequest.objects.create(sender = request.user,receiver = friend)
+                    fr = FriendRequest.objects.create(sender = request.user,receiver = friend)
+                    send_friend_request_notification(fr.sender,fr.receiver,fr)
                     print("friend request sent succesfully")
                     return HttpResponse({"message":"friend request sent succesfully"},status = status.HTTP_200_OK)
                 print("already friends")
@@ -117,9 +120,9 @@ class FriendRequestViewSet(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.
     serializer_class = FriendRequestSerializer
     permission_classes = permission_classes = [permissions.IsAuthenticated]
     def list(self, request, *args, **kwargs):
-        qs = self.get_queryset().filter(status = "pending",receiver = request.user)
+        qs = self.get_queryset().filter(status = "pending",receiver = request.user).select_related()
         serializer = self.serializer_class(qs,many = True)
-        return HttpResponse(serializer.data,status = status.HTTP_200_OK)
+        return Response(serializer.data,status = status.HTTP_200_OK)
     @action(detail=True, methods=['post'])
     def accept(self,request,pk = None):
         fr = self.get_object()
@@ -128,13 +131,13 @@ class FriendRequestViewSet(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.
             fr.sender.friends.add(fr.receiver)
             fr.status = "accepted"
             fr.save()
-            return HttpResponse({"message":"friend request accepted succesfully"},status = status.HTTP_200_OK)
-        return HttpResponse({"message":"invalid friend request"},status = status.HTTP_400_BAD_REQUEST)
+            return Response({"message":"friend request accepted succesfully"},status = status.HTTP_200_OK)
+        return Response({"message":"invalid friend request"},status = status.HTTP_400_BAD_REQUEST)
     @action(detail=True, methods=['post'])
     def reject(self,request,pk = None):
         fr = self.get_object()
         if fr.receiver == request.user and fr.status == "pending":
             fr.status = "rejected"
             fr.save()
-            return HttpResponse({"message":"friend request rejected succesfully"},status = status.HTTP_200_OK)
-        return HttpResponse({"message":"invalid friend request"},status = status.HTTP_400_BAD_REQUEST)
+            return Response({"message":"friend request rejected succesfully"},status = status.HTTP_200_OK)
+        return Response({"message":"invalid friend request"},status = status.HTTP_400_BAD_REQUEST)
