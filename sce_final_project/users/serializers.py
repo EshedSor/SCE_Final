@@ -40,21 +40,22 @@ class OTPSerializer(serializers.Serializer):
 class CityField(serializers.CharField): 
     def __init__(self, **kwargs): #initialize the CityField
         super().__init__(**kwargs)
-        self.cities = settings.CITY_LIST #load cities data when initializing the field
+        self.cities =  [city[0].strip().lower() for city in  settings.CITY_LIST] #load cities data when initializing the field
 
     def to_internal_value(self,data): #validate the provided city name
         if data not in self.cities: #check if the provided city name is in the loaded cities list
+            print("invalid city")
             raise serializers.ValidationError("Invalid city")
-        return data
+        return data.city
     
     def refresh_cities(self): #refresh the list of cities
-        self.cities = settings.CITY_LIST  
+        self.cities =[city[0].strip().lower() for city in  settings.CITY_LIST] #load cities data when initializing the field
 
 class PrefrencesSerializer(serializers.ModelSerializer):
     #city = CityField() #use the custom CityField for the 'city' field
     class Meta:
         model = User
-        fields = ['first_name','last_name','email','gender','birth_day','city','volunteer_frequency','volunteer_categories','most_important','allow_notifications','finished_onboarding']
+        fields = ['first_name','last_name','email','gender','birth_day','city','volunteer_frequency','volunteer_categories','most_important','allow_notifications','finished_onboarding','phone']
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
