@@ -52,7 +52,7 @@ class EventViewset(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.Retrieve
     filterset_class = EventFilter
     filter_backends = [filters.DjangoFilterBackend,OrderingFilter,SearchFilter]
     search_fields = ['name', 'description','organization__name']
-    queryset = Event.objects.all()
+    queryset = Event.objects.filter(start_date__gt=timezone.now())
     def get_serializer_class(self):
         if self.action in ('apply','cancel') :
             return ApplicationSerializer
@@ -156,7 +156,7 @@ class OrganizationApplicationViewSet(mixins.RetrieveModelMixin,mixins.ListModelM
         if app.status.lower() == "pending":
             if app.event.max_volunteers > (app.event.volunteers.count()):
                 app.status = "Approved"
-                app.event.volunteers.add(request.user)
+                app.event.volunteers.add(app.user)
                 app.save()
                 print(mixins.ListModelMixin)
                 return HttpResponse({"message":mixins.ListModelMixin},status = status.HTTP_200_OK)

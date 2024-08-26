@@ -3,7 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from .models import Message, Chat
 from users.models import User
-
+from notifications.views import send_message_notification
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name'].split('_')[1]
@@ -81,6 +81,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @sync_to_async
     def save_message(self, chat, content):
+        receiver = chat.member_2 if chat.member_1 == self.user else chat.member_1
+        send_message_notification(sender =self.user,receiver = receiver)
         Message.objects.create(related_chat=chat, content=content, sender=self.user)
 
     @sync_to_async
