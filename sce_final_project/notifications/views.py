@@ -29,7 +29,7 @@ def send_message_notification(sender, receiver):
     print(notification_data)
     # Send notification to the receiver's WebSocket group via Redis
     channel_layer = get_channel_layer()
-    print(channel_layer)
+    print(f"user_{receiver.id}")
     async_to_sync(channel_layer.group_send)(
         f"user_{receiver.id}",
         {
