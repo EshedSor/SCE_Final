@@ -93,7 +93,29 @@ class EventViewset(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.Retrieve
         #else:
         #    print(3)
         #    return HttpResponse("failed to Cancel application 3",status = status.HTTP_400_BAD_REQUEST)
-        
+    @action(detail=True, methods=['post'])
+    def confirm(self, request, pk=None):
+        event = self.get_object()
+        #serializer = ApplicationSerializer(data = request.data)
+        #if serializer.is_valid():
+        try:
+                application = Application.objects.get(
+        (Q(status='Approved')),
+        user= self.request.user,
+        event=event
+    )
+                application.status = "Confirmed"
+                application.save()
+                return HttpResponse("Succesfully approved Application",status = status.HTTP_200_OK)
+        except Application.DoesNotExist:
+                print(1)
+                return HttpResponse("failed to approve application DoesNotExist",status = status.HTTP_400_BAD_REQUEST)
+        except Application.MultipleObjectsReturned:
+                print(2)
+                return HttpResponse("failed to approve application MultipleObjectsReturned",status = status.HTTP_400_BAD_REQUEST)
+        #else:
+        #    print(3)
+        #    return HttpResponse("failed to Cancel application 3",status = status.HTTP_400_BAD_REQUEST)    
 class ShiftViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Event.objects.all()
